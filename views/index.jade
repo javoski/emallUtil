@@ -1,0 +1,85 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title 商城爬虫测试
+    script(src='http://lib.sinaapp.com/js/jquery/1.9.1/jquery-1.9.1.min.js')
+  body
+    input#url(type='text', name='url')
+    button#submit 获取
+    script.
+      $(function(){
+        function setMdskip(data){
+          console.log(data);
+        }
+        function getPrice(site, priceUrl, refer){
+          switch(site){
+            case 'jd':
+              $.ajax({
+                url:priceUrl,
+                type:'GET',
+                dataType:'jsonp',
+                data:{
+                  
+                },
+                beforeSend: function(xhr){
+                  xhr.setRequestHeader("Referer", url);
+                },
+                success: function(priceData){
+                  console.log(priceData);
+                  var price;
+                  switch(data.site){
+                    case 'jd':
+                      price = priceData[0].p;
+                      break;
+                    case 'tmall':
+                      price = priceData;
+                      break;
+                  }
+                  console.log('price:'+price);
+                },
+                error: function(a1, a2, a3){
+                  console.log(a1);
+                  console.log(a2);
+                  console.log(a3);
+                }
+              });
+              break;
+            case 'tmall':
+              $.ajax({
+                url:'/getPrice',
+                type:'GET',
+                data: {
+                  site: site,
+                  refer: refer,
+                  url: priceUrl
+                },
+                success: function(data){
+                  console.log(data);
+                }
+              });
+              
+              break;
+          }
+
+        }
+        $('#submit').on('click', function(){
+          var url = $('#url').val();
+          $.ajax({
+            url: '/getProduct',
+            type: 'get',
+            data: {
+              url:url
+            },
+            success:function(data){
+              console.log(data);
+              var $title = $('<h1></h1>');
+              $title.html(data.name);
+              $(document.body).append($title);
+              if(data.priceUrl){
+                getPrice(data.site, data.priceUrl, url);
+              }
+            }
+          });
+        });
+      });
